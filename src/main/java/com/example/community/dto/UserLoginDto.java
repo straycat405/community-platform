@@ -1,15 +1,16 @@
 package com.example.community.dto;
 
+import com.example.community.common.constants.MessageConstants;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 public class UserLoginDto {
 
-    @NotBlank(message = "이메일은 필수입니다")
-    @Email(message = "올바른 이메일 형식이 아닙니다")
+    @NotBlank(message = MessageConstants.Validation.EMAIL_REQUIRED)
+    @Email(message = MessageConstants.Validation.EMAIL_INVALID_FORMAT)
     private String email;
 
-    @NotBlank(message = "비밀번호는 필수입니다")
+    @NotBlank(message = MessageConstants.Validation.PASSWORD_REQUIRED)
     private String password;
 
     // 기본 생성자

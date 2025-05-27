@@ -1,5 +1,6 @@
 package com.example.community.entity;
 
+import com.example.community.common.constants.AppConstants;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -14,10 +15,10 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false, length = 100)
+    @Column(unique = true, nullable = false, length = AppConstants.User.EMAIL_MAX_LENGTH)
     private String email;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = AppConstants.User.NICKNAME_MAX_LENGTH)
     private String nickname;
 
     @Column(nullable = false)
@@ -26,10 +27,10 @@ public class User {
     @Column(length = 500)
     private String profileImage;
 
-    @Column(length = 1000)
+    @Column(length = AppConstants.User.BIO_MAX_LENGTH)
     private String bio; //자기소개
 
-    @Column(length = 100)
+    @Column(length = AppConstants.User.GITHUB_URL_MAX_LENGTH)
     private String githubUrl;
 
     @CreationTimestamp

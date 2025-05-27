@@ -1,5 +1,7 @@
 package com.example.community.service;
 
+import com.example.community.common.constants.MessageConstants;
+import com.example.community.dto.UserLoginDto;
 import com.example.community.dto.UserRegisterDto;
 import com.example.community.dto.UserResponseDto;
 import com.example.community.entity.User;
@@ -43,17 +45,17 @@ public class UserService {
     public UserResponseDto register(UserRegisterDto registerDto) {
         // 1. 비밀번호 일치 확인
         if(!registerDto.isPasswordMatching()) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다");
+            throw new IllegalArgumentException(MessageConstants.User.PASSWORD_MISMATCH);
         }
 
         // 2. 이메일 중복 확인
         if(userRepository.existsByEmail(registerDto.getEmail())) {
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다");
+            throw new IllegalArgumentException(MessageConstants.User.EMAIL_ALREADY_EXISTS);
         }
 
         // 3. 닉네임 중복 확인
         if(userRepository.existsByNickname(registerDto.getNickname())) {
-            throw new IllegalArgumentException("이미 존재하는 닉네임입니다");
+            throw new IllegalArgumentException(MessageConstants.User.NICKNAME_ALREADY_EXISTS);
         }
 
         // 4. 다 통과하면 받은 양식 중 비밀번호 암호화
@@ -82,6 +84,79 @@ public class UserService {
         return UserResponseDto.from(savedUser);
     }
 
+    /**
+     * 로그인 (비밀번호 확인)
+     */
+    public UserResponseDto login(UserLoginDto loginDto) {
+        // 1. 이메일로 사용자 찾기
+        User user = userRepository.findByEmail(loginDto.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException(MessageConstants.User.EMAIL_NOT_FOUND));
+
+        // 2. 비밀번호 찾기
+        if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
+            throw new IllegalArgumentException(MessageConstants.User.PASSWORD_MISMATCH);
+        }
+        // 둘다 합격하면 로그인 통과
+        // 3. DTO 변환 및 반환
+        return UserResponseDto.from(user);
+    }
+
+    /**
+     * 사용자 정보 조회 (findById)
+     */
+    public UserResponseDto getUserById(Long userId) {
+        // id값으로 유저 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException(MessageConstants.User.NOT_FOUND));
+
+        return UserResponseDto.from(user);
+    }
+
+    /**
+     * 사용자 정보 조회 (findByEmail)
+     */
+    public UserResponseDto getUserByEmail(String email) {
+        // id값으로 유저 조회
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException(MessageConstants.User.NOT_FOUND));
+
+        return UserResponseDto.from(user);
+    }
+
+    /**
+     * 이메일 중복 확인
+     */
+    public boolean isEmailExists(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    /**
+     * 닉네임 중복 확인
+     */
+    public boolean isNicknameExists(String nickname) {
+        return userRepository.existsByNickname(nickname);
+    }
+
+    /**
+     * 프로필 업데이트
+     */
+    @Transactional
+    public UserResponseDto updateProfile(Long userId, String nickname, String bio, String githubUrl) {
+        // 1. 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException(MessageConstants.User.NOT_FOUND));
+
+        // 2. 닉네임 중복 확인 (현재 사용자 제외)
+        if (!user.getNickname().equals(nickname) && userRepository.existsByNickname(nickname)) {
+            throw new IllegalArgumentException(MessageConstants.User.NICKNAME_ALREADY_EXISTS);
+        }
+
+        // 3. 프로필 업데이트
+        user.updateProfile(nickname, bio, githubUrl);
+
+        // 4. 저장 (더티 체킹으로 자동 업데이트)
+        return UserResponseDto.from(user);
+    }
 
 
 }

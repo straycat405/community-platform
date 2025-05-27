@@ -1,30 +1,38 @@
 package com.example.community.dto;
 
+import com.example.community.common.constants.AppConstants;
+import com.example.community.common.constants.MessageConstants;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public class UserRegisterDto {
 
-    @NotBlank(message = "이메일은 필수입니다")
-    @Email(message = "올바른 이메일 형식이 아닙니다")
+    @NotBlank(message = MessageConstants.Validation.EMAIL_REQUIRED)
+    @Email(message = MessageConstants.Validation.EMAIL_INVALID_FORMAT)
     private String email;
 
-    @NotBlank(message = "닉네임은 필수입니다")
-    @Size(min = 2, max = 20, message = "닉네임은 2-30자 사이여야 합니다")
+    @NotBlank(message = MessageConstants.Validation.NICKNAME_REQUIRED)
+    @Size(min = AppConstants.User.NICKNAME_MIN_LENGTH,
+            max = AppConstants.User.NICKNAME_MAX_LENGTH,
+            message = MessageConstants.Validation.NICKNAME_SIZE_INVALID)
     private String nickname;
 
-    @NotBlank(message = "비밀번호는 필수입니다")
-    @Size(min = 8, max = 20, message = "비밀번호는 8-20자 사이여야 합니다")
+    @NotBlank(message = MessageConstants.Validation.PASSWORD_REQUIRED)
+    @Size(min = AppConstants.User.PASSWORD_MIN_LENGTH,
+            max = AppConstants.User.PASSWORD_MAX_LENGTH,
+            message = MessageConstants.Validation.PASSWORD_SIZE_INVALID)
     private String password;
 
-    @NotBlank(message = "비밀번호 확인은 필수입니다")
+    @NotBlank(message = MessageConstants.Validation.PASSWORD_CONFIRM_REQUIRED)
     private String confirmPassword;
 
-    @Size(max = 500, message = "자기소개는 500자 이하여야 합니다")
+    @Size(max = AppConstants.User.BIO_MAX_LENGTH,
+            message = MessageConstants.Validation.BIO_SIZE_INVALID)
     private String bio;
 
-    @Size(max = 100, message = "GitHub URL은 100자 이하여야 합니다")
+    @Size(max = AppConstants.User.GITHUB_URL_MAX_LENGTH,
+            message = MessageConstants.Validation.GITHUB_URL_SIZE_INVALID)
     private String githubUrl;
 
     // 기본 생성자
