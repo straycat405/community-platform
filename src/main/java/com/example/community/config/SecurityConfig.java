@@ -6,7 +6,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
-
 // 클래스가 설정 파일임을 Spring에게 알림
 @Configuration
 // Spring Security 기능 활성화
@@ -21,19 +20,35 @@ public class SecurityConfig {
         http
                 // Url 접근 권한 설정
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/h2-console/**").permitAll() //H2 콘솔은 누구나 접근 가능
-                        .requestMatchers("/api/**").permitAll() //API 누구나 접근 가능
-                        .anyRequest().authenticated() // 그 외에는 로그인 필요
+                                // H2 콘솔 접근 허용
+                                .requestMatchers("/h2-console/**").permitAll()
+
+                                // API 엔드포인트 허용
+                                .requestMatchers("/api/**").permitAll()
+
+                                // 정적 리소스 허용 (CSS, JS, 이미지 등)
+                                .requestMatchers("/css/**", "/js/**", "/images/**", "/static/**").permitAll()
+
+                                // Spring Boot 기본 경로들 허용
+                                .requestMatchers("/", "/home", "/error").permitAll()
+
+                                // Favicon 허용
+                                .requestMatchers("/favicon.ico").permitAll()
+
+                                // 개발 단계에서 모든 요청 허용 (임시)
+                                .anyRequest().permitAll()
+
+                        // 실제 운영시에는 아래처럼 사용
+                        // .anyRequest().authenticated()
                 )
-                .csrf(csrf -> csrf.disable()) // (개발단계) csrf 보호 비활성화
+                .csrf(csrf -> csrf.disable()) // (개발단계) CSRF 보호 비활성화
+
+                // H2 콘솔을 위한 헤더 설정 (Spring Boot 3.3+ 방식)
                 .headers(headers -> headers
-                        .httpStrictTransportSecurity(hstsConfig -> hstsConfig.disable()) //(개발단계) HSTS(HTTP Strict Transport Security) 헤더 비활성화
+                        .frameOptions(frameOptions -> frameOptions.sameOrigin()) // H2 콘솔 iframe 허용
+                        .httpStrictTransportSecurity(hstsConfig -> hstsConfig.disable()) // (개발단계) HSTS 비활성화
                 );
 
         return http.build();
     }
-
-
-
-
 }
