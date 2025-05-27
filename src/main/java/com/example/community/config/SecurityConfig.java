@@ -4,6 +4,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 // 클래스가 설정 파일임을 Spring에게 알림
@@ -11,6 +13,12 @@ import org.springframework.security.web.SecurityFilterChain;
 // Spring Security 기능 활성화
 @EnableWebSecurity
 public class SecurityConfig {
+
+    // 패스워드 암호화를 위한 PasswordEncoder Bean 등록
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     // Spring이 해당 메서드를 실행해서 보안 설정을 만듬 (핵심 보안 체인)
     @Bean
@@ -23,8 +31,12 @@ public class SecurityConfig {
                                 // H2 콘솔 접근 허용
                                 .requestMatchers("/h2-console/**").permitAll()
 
-                                // API 엔드포인트 허용
-                                .requestMatchers("/api/**").permitAll()
+                                // API 엔드포인트 허용 (회원가입, 로그인 등)
+                                .requestMatchers("/api/users/register", "/api/users/login").permitAll()
+                                .requestMatchers("/api/users/check-email", "/api/users/check-nickname").permitAll()
+
+                                // 나머지 API는 인증 필요 (나중에 JWT 구현시)
+                                .requestMatchers("/api/**").authenticated()
 
                                 // 정적 리소스 허용 (CSS, JS, 이미지 등)
                                 .requestMatchers("/css/**", "/js/**", "/images/**", "/static/**").permitAll()
