@@ -2,6 +2,7 @@ package com.example.community.controller;
 
 import com.example.community.common.constants.AppConstants;
 import com.example.community.common.constants.MessageConstants;
+import com.example.community.common.dto.ApiResponse;
 import com.example.community.dto.UserLoginDto;
 import com.example.community.dto.UserRegisterDto;
 import com.example.community.dto.UserResponseDto;
@@ -14,6 +15,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 사용자 관련 REST API 컨트롤러
+ * GlobalExceptionHandler가 예외를 처리하므로 try-catch 제거
+ */
 @RestController
 @RequestMapping(AppConstants.Api.USER_URL)
 public class UserController {
@@ -29,23 +34,15 @@ public class UserController {
      * POST /api/users/register
      */
     @PostMapping("/register")
-    public ResponseEntity<Map<String,Object>> register(@Valid @RequestBody UserRegisterDto registerDto) {
-        try {
-            UserResponseDto userResponse = userService.register(registerDto);
+    public ResponseEntity<ApiResponse<UserResponseDto>> register(@Valid @RequestBody UserRegisterDto registerDto) {
+        UserResponseDto userResponse = userService.register(registerDto);
 
-            Map<String,Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", MessageConstants.User.REGISTER_SUCCESS);
-            response.put("data", userResponse);
+        ApiResponse<UserResponseDto> response = ApiResponse.success(
+                MessageConstants.User.REGISTER_SUCCESS,
+                userResponse
+        );
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (IllegalArgumentException e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("success", false);
-            errorResponse.put("message", e.getMessage());
-
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     /**
@@ -53,24 +50,15 @@ public class UserController {
      * POST /api/users/login
      */
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody UserLoginDto loginDto) {
-        try {
-            UserResponseDto userResponse = userService.login(loginDto);
+    public ResponseEntity<ApiResponse<UserResponseDto>> login(@Valid @RequestBody UserLoginDto loginDto) {
+        UserResponseDto userResponse = userService.login(loginDto);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", MessageConstants.User.LOGIN_SUCCESS);
-            response.put("data", userResponse);
+        ApiResponse<UserResponseDto> response = ApiResponse.success(
+                MessageConstants.User.LOGIN_SUCCESS,
+                userResponse
+        );
 
-            return ResponseEntity.ok(response);
-
-        } catch (IllegalArgumentException e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("success", false);
-            errorResponse.put("message", e.getMessage());
-
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
-        }
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -78,22 +66,12 @@ public class UserController {
      * GET /api/users/{id}
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> getUserById(@PathVariable Long id) {
-        try {
-            UserResponseDto userResponse = userService.getUserById(id);
+    public ResponseEntity<ApiResponse<UserResponseDto>> getUserById(@PathVariable Long id) {
+        UserResponseDto userResponse = userService.getUserById(id);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", userResponse);
+        ApiResponse<UserResponseDto> response = ApiResponse.success(userResponse);
 
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("success", false);
-            errorResponse.put("message", e.getMessage());
-
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-        }
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -101,15 +79,16 @@ public class UserController {
      * GET /api/users/check-email?email=test@example.com
      */
     @GetMapping("/check-email")
-    public ResponseEntity<Map<String, Object>> checkEmail(@RequestParam String email) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> checkEmail(@RequestParam String email) {
         boolean exists = userService.isEmailExists(email);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("exists", exists);
-        response.put("message", exists ?
+        Map<String, Object> data = new HashMap<>();
+        data.put("exists", exists);
+        data.put("message", exists ?
                 MessageConstants.User.EMAIL_UNAVAILABLE :
                 MessageConstants.User.EMAIL_AVAILABLE);
+
+        ApiResponse<Map<String, Object>> response = ApiResponse.success(data);
 
         return ResponseEntity.ok(response);
     }
@@ -119,15 +98,16 @@ public class UserController {
      * GET /api/users/check-nickname?nickname=testuser
      */
     @GetMapping("/check-nickname")
-    public ResponseEntity<Map<String, Object>> checkNickname(@RequestParam String nickname) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> checkNickname(@RequestParam String nickname) {
         boolean exists = userService.isNicknameExists(nickname);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("exists", exists);
-        response.put("message", exists ?
+        Map<String, Object> data = new HashMap<>();
+        data.put("exists", exists);
+        data.put("message", exists ?
                 MessageConstants.User.NICKNAME_UNAVAILABLE :
                 MessageConstants.User.NICKNAME_AVAILABLE);
+
+        ApiResponse<Map<String, Object>> response = ApiResponse.success(data);
 
         return ResponseEntity.ok(response);
     }
@@ -137,30 +117,22 @@ public class UserController {
      * PUT /api/users/{id}
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> updateProfile(
+    public ResponseEntity<ApiResponse<UserResponseDto>> updateProfile(
             @PathVariable Long id,
             @RequestBody Map<String, String> updateData) {
-        try {
-            String nickname = updateData.get("nickname");
-            String bio = updateData.get("bio");
-            String githubUrl = updateData.get("githubUrl");
 
-            UserResponseDto userResponse = userService.updateProfile(id, nickname, bio, githubUrl);
+        String nickname = updateData.get("nickname");
+        String bio = updateData.get("bio");
+        String githubUrl = updateData.get("githubUrl");
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", MessageConstants.User.PROFILE_UPDATE_SUCCESS);
-            response.put("data", userResponse);
+        UserResponseDto userResponse = userService.updateProfile(id, nickname, bio, githubUrl);
 
-            return ResponseEntity.ok(response);
+        ApiResponse<UserResponseDto> response = ApiResponse.success(
+                MessageConstants.User.PROFILE_UPDATE_SUCCESS,
+                userResponse
+        );
 
-        } catch (IllegalArgumentException e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("success", false);
-            errorResponse.put("message", e.getMessage());
-
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -168,22 +140,11 @@ public class UserController {
      * GET /api/users/by-email?email=test@example.com
      */
     @GetMapping("/by-email")
-    public ResponseEntity<Map<String, Object>> getUserByEmail(@RequestParam String email) {
-        try {
-            UserResponseDto userResponse = userService.getUserByEmail(email);
+    public ResponseEntity<ApiResponse<UserResponseDto>> getUserByEmail(@RequestParam String email) {
+        UserResponseDto userResponse = userService.getUserByEmail(email);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", userResponse);
+        ApiResponse<UserResponseDto> response = ApiResponse.success(userResponse);
 
-            return ResponseEntity.ok(response);
-
-        } catch (IllegalArgumentException e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("success", false);
-            errorResponse.put("message", e.getMessage());
-
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-        }
+        return ResponseEntity.ok(response);
     }
 }
