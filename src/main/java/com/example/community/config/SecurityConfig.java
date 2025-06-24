@@ -31,12 +31,14 @@ public class SecurityConfig {
                                 // H2 콘솔 접근 허용
                                 .requestMatchers("/h2-console/**").permitAll()
 
+                                .requestMatchers("/api/health/**").permitAll()
+
                                 // API 엔드포인트 허용 (회원가입, 로그인 등)
                                 .requestMatchers("/api/users/register", "/api/users/login").permitAll()
                                 .requestMatchers("/api/users/check-email", "/api/users/check-nickname").permitAll()
 
-                                // 나머지 API는 인증 필요 (나중에 JWT 구현시)
-                                .requestMatchers("/api/**").authenticated()
+                                // 개발 단계: 사용자 조회 API도 임시로 허용
+                                .requestMatchers("/api/users/**").permitAll()
 
                                 // 정적 리소스 허용 (CSS, JS, 이미지 등)
                                 .requestMatchers("/css/**", "/js/**", "/images/**", "/static/**").permitAll()

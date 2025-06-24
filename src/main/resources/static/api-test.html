@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Platform API 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .status {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+    </style>
+</head>
+<body>
+<h1>🚀 Community Platform API 테스트</h1>
+
+<!-- 서버 상태 확인 -->
+<div class="container">
+    <h2>📡 서버 상태 확인</h2>
+    <p>먼저 Spring Boot 애플리케이션이 실행되고 있는지 확인하세요.</p>
+    <button onclick="checkServerStatus()">서버 상태 확인</button>
+    <div id="serverResult" class="result" style="display: none;"></div>
+</div>
+
+<!-- 회원가입 테스트 -->
+<div class="container">
+    <h2>📝 회원가입 테스트</h2>
+    <form id="registerForm">
+        <div class="form-group">
+            <label>이메일:</label>
+            <input type="email" id="registerEmail" value="test@example.com" required>
+        </div>
+        <div class="form-group">
+            <label>닉네임:</label>
+            <input type="text" id="registerNickname" value="testuser" required>
+        </div>
+        <div class="form-group">
+            <label>비밀번호:</label>
+            <input type="password" id="registerPassword" value="password123" required>
+        </div>
+        <div class="form-group">
+            <label>비밀번호 확인:</label>
+            <input type="password" id="confirmPassword" value="password123" required>
+        </div>
+        <div class="form-group">
+            <label>자기소개 (선택):</label>
+            <textarea id="registerBio" placeholder="간단한 자기소개를 작성해주세요"></textarea>
+        </div>
+        <div class="form-group">
+            <label>GitHub URL (선택):</label>
+            <input type="url" id="registerGithub" placeholder="https://github.com/username">
+        </div>
+        <button type="submit">회원가입</button>
+    </form>
+    <div id="registerResult" class="result" style="display: none;"></div>
+</div>
+
+<!-- 이메일 중복 확인 -->
+<div class="container">
+    <h2>✉️ 이메일 중복 확인</h2>
+    <div class="form-group">
+        <label>이메일:</label>
+        <input type="email" id="checkEmail" value="test@example.com">
+    </div>
+    <button onclick="checkEmailDuplicate()">이메일 중복 확인</button>
+    <div id="emailCheckResult" class="result" style="display: none;"></div>
+</div>
+
+<!-- 닉네임 중복 확인 -->
+<div class="container">
+    <h2>👤 닉네임 중복 확인</h2>
+    <div class="form-group">
+        <label>닉네임:</label>
+        <input type="text" id="checkNickname" value="testuser">
+    </div>
+    <button onclick="checkNicknameDuplicate()">닉네임 중복 확인</button>
+    <div id="nicknameCheckResult" class="result" style="display: none;"></div>
+</div>
+
+<!-- 로그인 테스트 -->
+<div class="container">
+    <h2>🔐 로그인 테스트</h2>
+    <form id="loginForm">
+        <div class="form-group">
+            <label>이메일:</label>
+            <input type="email" id="loginEmail" value="test@example.com" required>
+        </div>
+        <div class="form-group">
+            <label>비밀번호:</label>
+            <input type="password" id="loginPassword" value="password123" required>
+        </div>
+        <button type="submit">로그인</button>
+    </form>
+    <div id="loginResult" class="result" style="display: none;"></div>
+</div>
+
+<!-- 사용자 정보 조회 -->
+<div class="container">
+    <h2>👥 사용자 정보 조회</h2>
+    <div class="form-group">
+        <label>사용자 ID:</label>
+        <input type="number" id="userId" value="1" min="1">
+    </div>
+    <button onclick="getUserById()">ID로 조회</button>
+
+    <div class="form-group" style="margin-top: 15px;">
+        <label>이메일:</label>
+        <input type="email" id="userEmail" value="test@example.com">
+    </div>
+    <button onclick="getUserByEmail()">이메일로 조회</button>
+    <div id="userInfoResult" class="result" style="display: none;"></div>
+</div>
+
+<!-- H2 콘솔 링크 -->
+<div class="container">
+    <h2>🗄️ H2 데이터베이스 콘솔</h2>
+    <p>데이터베이스를 직접 확인하려면 H2 콘솔을 사용하세요.</p>
+    <button onclick="openH2Console()">H2 콘솔 열기</button>
+    <div style="margin-top: 10px; font-size: 14px; color: #666;">
+        <strong>연결 정보:</strong><br>
+        JDBC URL: jdbc:h2:mem:testdb<br>
+        User Name: sa<br>
+        Password: (비어있음)
+    </div>
+</div>
+
+<script>
+    const API_BASE_URL = 'http://localhost:8080/api';
+
+    // 서버 상태 확인
+    async function checkServerStatus() {
+        const resultDiv = document.getElementById('serverResult');
+        resultDiv.style.display = 'block';
+
+        // 여러 방법으로 서버 상태 확인
+        const healthEndpoints = [
+            { url: `${API_BASE_URL}/health`, name: 'Health Check API' },
+            { url: `${API_BASE_URL}/health/ping`, name: 'Ping API' },
+            { url: `http://localhost:8080/actuator/health`, name: 'Spring Actuator' }
+        ];
+
+        for (const endpoint of healthEndpoints) {
+            try {
+                const response = await fetch(endpoint.url);
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `<div class="status success">✅ 서버가 정상적으로 실행 중입니다!</div>
+                    <strong>확인된 엔드포인트:</strong> ${endpoint.name}
+                    <strong>응답 데이터:</strong>
+                    ${JSON.stringify(data, null, 2)}`;
+                    return; // 성공하면 즉시 종료
+                }
+            } catch (error) {
+                // 다음 엔드포인트 시도
+                continue;
+            }
+        }
+
+        // 모든 엔드포인트 실패시
+        resultDiv.innerHTML = `<div class="status error">❌ 서버에 연결할 수 없습니다.</div>
+        <strong>확인사항:</strong>
+        1. Spring Boot 애플리케이션이 실행되고 있는지 확인
+        2. 포트 8080이 사용 중인지 확인
+        3. CORS 설정이 올바른지 확인
+        4. HealthCheckController가 구현되어 있는지 확인
+
+        <strong>시도한 엔드포인트들:</strong>
+        ${healthEndpoints.map(ep => `- ${ep.url} (${ep.name})`).join('\n')}`;
+    }
+
+    // 회원가입
+    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const data = {
+            email: document.getElementById('registerEmail').value,
+            nickname: document.getElementById('registerNickname').value,
+            password: document.getElementById('registerPassword').value,
+            confirmPassword: document.getElementById('confirmPassword').value,
+            bio: document.getElementById('registerBio').value,
+            githubUrl: document.getElementById('registerGithub').value
+        };
+
+        await makeApiCall('POST', '/users/register', data, 'registerResult');
+    });
+
+    // 로그인
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const data = {
+            email: document.getElementById('loginEmail').value,
+            password: document.getElementById('loginPassword').value
+        };
+
+        await makeApiCall('POST', '/users/login', data, 'loginResult');
+    });
+
+    // 이메일 중복 확인
+    async function checkEmailDuplicate() {
+        const email = document.getElementById('checkEmail').value;
+        await makeApiCall('GET', `/users/check-email?email=${encodeURIComponent(email)}`, null, 'emailCheckResult');
+    }
+
+    // 닉네임 중복 확인
+    async function checkNicknameDuplicate() {
+        const nickname = document.getElementById('checkNickname').value;
+        await makeApiCall('GET', `/users/check-nickname?nickname=${encodeURIComponent(nickname)}`, null, 'nicknameCheckResult');
+    }
+
+    // ID로 사용자 조회
+    async function getUserById() {
+        const userId = document.getElementById('userId').value;
+        await makeApiCall('GET', `/users/${userId}`, null, 'userInfoResult');
+    }
+
+    // 이메일로 사용자 조회
+    async function getUserByEmail() {
+        const email = document.getElementById('userEmail').value;
+        await makeApiCall('GET', `/users/by-email?email=${encodeURIComponent(email)}`, null, 'userInfoResult');
+    }
+
+    // 공통 API 호출 함수
+    async function makeApiCall(method, endpoint, data, resultElementId) {
+        const resultDiv = document.getElementById(resultElementId);
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = '<div class="status">⏳ 요청 중...</div>';
+
+        try {
+            const options = {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            };
+
+            if (data && method !== 'GET') {
+                options.body = JSON.stringify(data);
+            }
+
+            const response = await fetch(API_BASE_URL + endpoint, options);
+            const responseData = await response.text();
+
+            let parsedData;
+            try {
+                parsedData = JSON.parse(responseData);
+            } catch {
+                parsedData = responseData;
+            }
+
+            if (response.ok) {
+                resultDiv.innerHTML = `<div class="status success">✅ 성공 (${response.status})</div>` +
+                                    JSON.stringify(parsedData, null, 2);
+            } else {
+                resultDiv.innerHTML = `<div class="status error">❌ 실패 (${response.status})</div>` +
+                                    JSON.stringify(parsedData, null, 2);
+            }
+        } catch (error) {
+            resultDiv.innerHTML = `<div class="status error">❌ 네트워크 오류</div>` +
+                                `오류: ${error.message}`;
+        }
+    }
+
+    // H2 콘솔 열기
+    function openH2Console() {
+        window.open('http://localhost:8080/h2-console', '_blank');
+    }
+
+    // 페이지 로드 시 서버 상태 자동 확인
+    window.addEventListener('load', function() {
+        setTimeout(checkServerStatus, 1000);
+    });
+</script>
+</body>
+</html>

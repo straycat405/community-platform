@@ -50,6 +50,16 @@ public class ApiResponse<T> {
         return new ApiResponse<>(false, message, null, error);
     }
 
+    // 실패 응답 (메시지 + 데이터)
+    public static <T> ApiResponse<T> errorWithData(String message, T data) {
+        return new ApiResponse<>(false, message, data, null);
+    }
+
+    // 실패 응답 (메시지 + 데이터 + 에러) - 새로 추가된 메서드
+    public static <T> ApiResponse<T> errorWithData(String message, T data, String error) {
+        return new ApiResponse<>(false, message, data, error);
+    }
+
     // Getter들
     public boolean isSuccess() {
         return success;
