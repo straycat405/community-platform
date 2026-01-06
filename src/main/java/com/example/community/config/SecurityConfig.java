@@ -57,6 +57,15 @@ public class SecurityConfig {
                 )
                 .csrf(csrf -> csrf.disable()) // (개발단계) CSRF 보호 비활성화
 
+                .cors(cors -> cors.configurationSource(request -> {
+                    var corsConfiguration = new org.springframework.web.cors.CorsConfiguration();
+                    corsConfiguration.setAllowedOrigins(java.util.List.of("http://localhost:5173"));
+                    corsConfiguration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                    corsConfiguration.setAllowedHeaders(java.util.List.of("*"));
+                    corsConfiguration.setAllowCredentials(true);
+                    return corsConfiguration;
+                }))
+
                 // H2 콘솔을 위한 헤더 설정 (Spring Boot 3.3+ 방식)
                 .headers(headers -> headers
                         .frameOptions(frameOptions -> frameOptions.sameOrigin()) // H2 콘솔 iframe 허용

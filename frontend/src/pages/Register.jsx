@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import api from '../services/api';
 
 function Register() {
   const navigate = useNavigate();
@@ -15,12 +16,46 @@ function Register() {
 
   const [validationError, setValidationError] = useState('');
 
+  const [emailStatus, setEmailStatus] = useState({
+    checking : false, //중복 사용 중인지
+    available : null, //사용 가능 여부 (true/false/null)
+    message : '' // 피드백 메세지
+  })
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
     setValidationError('');
+  };
+
+  const checkEmailAvailability = async (email) => {
+    //이메일 형식이 유효하지 않으면 체크하지 않음
+    if (!email || !email.includes('@')) {
+      setEmailStatus({ checking: false, available: null, message: '' })
+      return;
+    }
+
+    setEmailStatus({ checking : true, available : null, message: '확인 중...'});
+
+    try {
+      const response = await api.get(`/users/check-email?email=${email}`);
+      const { exists, message } = response.data.data;
+
+      setEmailStatus({
+        checking: false,
+        available: !exists,
+        message: message
+      });
+    } catch (err) {
+      console.error('이메일 중복 확인 실패', err);
+      setEmailStatus({
+        checking: false,
+        available: null,
+        message: '확인 중 오류가 발생했습니다.'
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -67,9 +102,21 @@ function Register() {
                 required
                 value={formData.email}
                 onChange={handleChange}
+                onBlur={(e) => checkEmailAvailability(e.target.value)}
                 className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="your@email.com"
               />
+              {emailStatus.message && (
+                <p className={`text-sm mt-1 ${
+                  emailStatus.checking
+                    ? 'text-gray-500'
+                    : emailStatus.available
+                      ? 'text-green-600'
+                      : 'text-red-600'
+                }`}>
+                  {emailStatus.message}
+                </p>
+              )}
             </div>
             
             <div>
@@ -130,7 +177,7 @@ function Register() {
           <div>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || emailStatus.available === false}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400"
             >
               {isLoading ? '처리중...' : '회원가입'}
