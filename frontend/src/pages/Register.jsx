@@ -14,6 +14,7 @@ function Register() {
     nickname: '',
   });
 
+  //20260106 수정부
   const [validationError, setValidationError] = useState('');
 
   const [emailStatus, setEmailStatus] = useState({
@@ -173,7 +174,7 @@ function Register() {
               {validationError || error}
             </div>
           )}
-
+          
           <div>
             <button
               type="submit"
