@@ -37,8 +37,6 @@ public class SecurityConfig {
         http
                 // Url 접근 권한 설정
                 .authorizeHttpRequests(authz -> authz
-                                // H2 콘솔 접근 허용
-                                .requestMatchers("/h2-console/**").permitAll()
 
                                 .requestMatchers("/api/health/**").permitAll()
 

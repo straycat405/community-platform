@@ -27,8 +27,11 @@ dependencies {
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 
-	// H2 Database
-	runtimeOnly 'com.h2database:h2'
+	// H2 Database (20260108부로 SUPABASE로 대체. 사용하지 않음)
+	// runtimeOnly 'com.h2database:h2'
+
+	// SUPABASE - PostgreSQL 추가
+	runtimeOnly 'org.postgresql:postgresql'
 
 	// JWT
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
