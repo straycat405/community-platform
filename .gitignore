@@ -49,3 +49,6 @@ Thumbs.db
 
 ### JWT Token SECRET ###
 application-local.properties
+
+### Claude Code ###
+.claude/
