@@ -1,0 +1,12 @@
+# Example local configuration file
+# Copy this file to 'application-local.properties' and fill in your actual values
+# application-local.properties is ignored by Git for security
+
+# Supabase PostgreSQL (Session Pooler)
+spring.datasource.url=jdbc:postgresql://YOUR-REGION.pooler.supabase.com:5432/postgres
+spring.datasource.username=postgres.YOUR-PROJECT-ID
+spring.datasource.password=YOUR-DATABASE-PASSWORD
+
+# JWT Secret Key (Base64 encoded)
+# Generate a new secret: echo -n "your-secret-key-here" | base64
+jwt.secret=YOUR-BASE64-ENCODED-JWT-SECRET
