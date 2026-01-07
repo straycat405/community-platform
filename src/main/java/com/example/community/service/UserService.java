@@ -1,14 +1,21 @@
 package com.example.community.service;
 
 import com.example.community.common.constants.MessageConstants;
+import com.example.community.dto.LoginResponse;
+import com.example.community.dto.TokenResponse;
 import com.example.community.dto.UserLoginDto;
 import com.example.community.dto.UserRegisterDto;
 import com.example.community.dto.UserResponseDto;
+import com.example.community.entity.RefreshToken;
 import com.example.community.entity.User;
+import com.example.community.repository.RefreshTokenRepository;
 import com.example.community.repository.UserRepository;
+import com.example.community.security.JwtTokenProvider;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 
 // @Transactional은 메서드 실행을 하나의 작업 단위로 묶음
@@ -31,11 +38,16 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     // 기본 생성자
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+                       JwtTokenProvider jwtTokenProvider, RefreshTokenRepository refreshTokenRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     /**
@@ -85,20 +97,36 @@ public class UserService {
     }
 
     /**
-     * 로그인 (비밀번호 확인)
+     * 로그인 (비밀번호 확인 + JWT 토큰 발급)
      */
-    public UserResponseDto login(UserLoginDto loginDto) {
+    @Transactional
+    public LoginResponse login(UserLoginDto loginDto) {
         // 1. 이메일로 사용자 찾기
         User user = userRepository.findByEmail(loginDto.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException(MessageConstants.User.EMAIL_NOT_FOUND));
 
-        // 2. 비밀번호 찾기
+        // 2. 비밀번호 확인
         if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException(MessageConstants.User.PASSWORD_MISMATCH);
         }
-        // 둘다 합격하면 로그인 통과
-        // 3. DTO 변환 및 반환
-        return UserResponseDto.from(user);
+
+        // 3. JWT 토큰 생성
+        String accessToken = jwtTokenProvider.createAccessToken(user.getEmail(), user.getId());
+        String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail());
+
+        // 4. RefreshToken DB 저장 (7일 만료)
+        RefreshToken refreshTokenEntity = new RefreshToken(
+                refreshToken,
+                user.getId(),
+                LocalDateTime.now().plusDays(7)
+        );
+        refreshTokenRepository.save(refreshTokenEntity);
+
+        // 5. 응답 생성
+        UserResponseDto userResponse = UserResponseDto.from(user);
+        TokenResponse tokens = new TokenResponse(accessToken, refreshToken);
+
+        return new LoginResponse(userResponse, tokens);
     }
 
     /**

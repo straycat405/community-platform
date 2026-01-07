@@ -3,6 +3,7 @@ package com.example.community.controller;
 import com.example.community.common.constants.AppConstants;
 import com.example.community.common.constants.MessageConstants;
 import com.example.community.common.dto.ApiResponse;
+import com.example.community.dto.LoginResponse;
 import com.example.community.dto.UserLoginDto;
 import com.example.community.dto.UserRegisterDto;
 import com.example.community.dto.UserResponseDto;
@@ -50,12 +51,12 @@ public class UserController {
      * POST /api/users/login
      */
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<UserResponseDto>> login(@Valid @RequestBody UserLoginDto loginDto) {
-        UserResponseDto userResponse = userService.login(loginDto);
+    public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody UserLoginDto loginDto) {
+        LoginResponse loginResponse = userService.login(loginDto);
 
-        ApiResponse<UserResponseDto> response = ApiResponse.success(
+        ApiResponse<LoginResponse> response = ApiResponse.success(
                 MessageConstants.User.LOGIN_SUCCESS,
-                userResponse
+                loginResponse
         );
 
         return ResponseEntity.ok(response);

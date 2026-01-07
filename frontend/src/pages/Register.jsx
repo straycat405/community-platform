@@ -72,6 +72,7 @@ function Register() {
       await register({
         email: formData.email,
         password: formData.password,
+        confirmPassword: formData.passwordConfirm,
         nickname: formData.nickname,
       });
       alert('회원가입이 완료되었습니다!');

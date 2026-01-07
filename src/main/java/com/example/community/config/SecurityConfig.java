@@ -1,18 +1,27 @@
 package com.example.community.config;
 
+import com.example.community.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 // 클래스가 설정 파일임을 Spring에게 알림
 @Configuration
 // Spring Security 기능 활성화
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
 
     // 패스워드 암호화를 위한 PasswordEncoder Bean 등록
     @Bean
@@ -36,9 +45,7 @@ public class SecurityConfig {
                                 // API 엔드포인트 허용 (회원가입, 로그인 등)
                                 .requestMatchers("/api/users/register", "/api/users/login").permitAll()
                                 .requestMatchers("/api/users/check-email", "/api/users/check-nickname").permitAll()
-
-                                // 개발 단계: 사용자 조회 API도 임시로 허용
-                                .requestMatchers("/api/users/**").permitAll()
+                                .requestMatchers("/api/auth/refresh", "/api/auth/logout").permitAll()
 
                                 // 정적 리소스 허용 (CSS, JS, 이미지 등)
                                 .requestMatchers("/css/**", "/js/**", "/images/**", "/static/**").permitAll()
@@ -49,22 +56,27 @@ public class SecurityConfig {
                                 // Favicon 허용
                                 .requestMatchers("/favicon.ico").permitAll()
 
-                                // 개발 단계에서 모든 요청 허용 (임시)
-                                .anyRequest().permitAll()
-
-                        // 실제 운영시에는 아래처럼 사용
-                        // .anyRequest().authenticated()
+                                // 나머지는 인증 필요
+                                .anyRequest().authenticated()
                 )
-                .csrf(csrf -> csrf.disable()) // (개발단계) CSRF 보호 비활성화
+                .csrf(csrf -> csrf.disable()) // JWT 사용으로 CSRF 불필요
 
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfiguration = new org.springframework.web.cors.CorsConfiguration();
-                    corsConfiguration.setAllowedOrigins(java.util.List.of("http://localhost:5173"));
+                    corsConfiguration.setAllowedOrigins(java.util.List.of("http://localhost:5173", "http://localhost:5174", "http://localhost:5175"));
                     corsConfiguration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     corsConfiguration.setAllowedHeaders(java.util.List.of("*"));
                     corsConfiguration.setAllowCredentials(true);
                     return corsConfiguration;
                 }))
+
+                // 세션 사용 안함 (JWT 사용)
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+
+                // JWT 필터 추가
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 
                 // H2 콘솔을 위한 헤더 설정 (Spring Boot 3.3+ 방식)
                 .headers(headers -> headers
