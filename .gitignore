@@ -46,3 +46,6 @@ build/
 ### OS ###
 .DS_Store
 Thumbs.db
+
+### JWT Token SECRET ###
+application-local.properties
