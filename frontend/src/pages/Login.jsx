@@ -32,6 +32,14 @@ function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
       <div className="max-w-md w-full space-y-8">
+
+        {/* Mac환경 깃허브 커밋 테스트용 */}
+        <div>
+          <h2 className="text-center text-3xl font-bold text-gray-900">
+            Straycat's Portfolio
+          </h2>
+        </div>
+
         <div>
           <h2 className="text-center text-3xl font-bold text-gray-900">
             로그인
