@@ -18,15 +18,50 @@ export const authService = {
   // 로그인
   login: async (credentials) => {
     const response = await api.post('/users/login', credentials);
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
+    const { accessToken, refreshToken, user } = response.data;
+
+    if (accessToken && refreshToken) {
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
     }
+
     return response.data;
   },
 
   // 로그아웃
-  logout: () => {
-    localStorage.removeItem('token');
+  logout: async () => {
+    const refreshToken = localStorage.getItem('refreshToken');
+
+    // 백엔드에 로그아웃 요청 (RefreshToken DB에서 삭제)
+    if (refreshToken) {
+      try {
+        await api.post('/auth/logout', { refreshToken });
+      } catch (error) {
+        console.error('로그아웃 API 호출 실패:', error);
+      }
+    }
+
+    // 로컬 스토리지에서 토큰 제거
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+  },
+
+  // 토큰 갱신
+  refreshToken: async () => {
+    const refreshToken = localStorage.getItem('refreshToken');
+
+    if (!refreshToken) {
+      throw new Error('Refresh token not found');
+    }
+
+    const response = await api.post('/auth/refresh', { refreshToken });
+    const { accessToken } = response.data;
+
+    if (accessToken) {
+      localStorage.setItem('accessToken', accessToken);
+    }
+
+    return accessToken;
   },
 
   // 현재 사용자 정보

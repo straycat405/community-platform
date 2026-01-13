@@ -7,7 +7,9 @@ import com.example.community.dto.LoginResponse;
 import com.example.community.dto.UserLoginDto;
 import com.example.community.dto.UserRegisterDto;
 import com.example.community.dto.UserResponseDto;
+import com.example.community.security.JwtTokenProvider;
 import com.example.community.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,9 +27,11 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, JwtTokenProvider jwtTokenProvider) {
         this.userService = userService;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     /**
@@ -63,6 +67,28 @@ public class UserController {
     }
 
     /**
+     * 현재 로그인한 사용자 정보 조회 (JWT 토큰 기반)
+     * GET /api/users/me
+     */
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<UserResponseDto>> getCurrentUser(HttpServletRequest request) {
+        // Authorization 헤더에서 토큰 추출
+        String token = extractTokenFromRequest(request);
+
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("토큰이 없습니다."));
+        }
+
+        // 토큰에서 사용자 ID 추출
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+        UserResponseDto userResponse = userService.getUserById(userId);
+
+        ApiResponse<UserResponseDto> response = ApiResponse.success(userResponse);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * 사용자 정보 조회
      * GET /api/users/{id}
      */
@@ -73,6 +99,17 @@ public class UserController {
         ApiResponse<UserResponseDto> response = ApiResponse.success(userResponse);
 
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * HTTP 요청에서 JWT 토큰 추출
+     */
+    private String extractTokenFromRequest(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 
     /**

@@ -38,9 +38,16 @@ export const useAuthStore = create((set) => ({
     }
   },
 
-  logout: () => {
-    authService.logout();
-    set({ user: null, isAuthenticated: false });
+  logout: async () => {
+    set({ isLoading: true });
+    try {
+      await authService.logout();
+      set({ user: null, isAuthenticated: false, isLoading: false });
+    } catch (error) {
+      console.error('로그아웃 실패:', error);
+      // 로그아웃은 실패해도 로컬 상태는 초기화
+      set({ user: null, isAuthenticated: false, isLoading: false });
+    }
   },
 
   clearError: () => set({ error: null }),
