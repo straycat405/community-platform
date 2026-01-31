@@ -38,6 +38,8 @@ public class SecurityConfig {
                 // Url 접근 권한 설정
                 .authorizeHttpRequests(authz -> authz
 
+                                // Actuator 헬스체크 허용 (로드밸런서용)
+                                .requestMatchers("/actuator/**").permitAll()
                                 .requestMatchers("/api/health/**").permitAll()
 
                                 // API 엔드포인트 허용 (회원가입, 로그인 등)
